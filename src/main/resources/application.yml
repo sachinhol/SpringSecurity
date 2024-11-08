@@ -1,0 +1,17 @@
+spring:
+  security:
+    user:
+      name: sachin
+      password: sony
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/clinic  # The database URL
+    username: root  # Your database username
+    password: root  # Your database password
+    driver-class-name: com.mysql.cj.jdbc.Driver  # JDBC driver class (for MySQL)
+    platform: mysql  # Database platform (could be 'postgresql', 'h2', etc.)
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # Options: none, update, create, create-drop (for automatic schema updates)
+      show-sql: true  # Show the SQL queries in the console for debugging

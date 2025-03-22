@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.holsync.security</groupId>
-	<artifactId>SpringSecDemo</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>SpringSecJwtDemo</artifactId>
+	<version>1.0.0.0</version>
 	<name>SpringSecDemo</name>
-	<description>Demo project for Spring Boot Security</description>
+	<description>Demo project for Spring Boot Jwt Security</description>
 	<url/>
 	<licenses>
 		<license/>

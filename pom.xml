@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.holsync.photoapp.dicovery</groupId>
-	<artifactId>PhotoAppDiscoveryService</artifactId>
+	<artifactId>EurekaServerApplication</artifactId>
 	<version>1.0.0.0</version>
 	<name>PhotoAppDiscoveryService</name>
 	<description>Eureka Discovery Service</description>

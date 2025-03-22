@@ -1,55 +1,74 @@
-# Flow of loadUserByUsername(String email) in Spring Security
+# JWT Authentication Flow in Spring Security
 
-## Step-by-Step Execution Flow
+## 📌 Step-by-Step Execution
 
-1. **User Sends Request:**
-    - The client (Postman, browser, or frontend) sends a request with **Basic Authentication** headers.
-    - Example:
-      ```http
-      Authorization: Basic base64(username:password)
-      ```
+### 1️⃣ User Login Request
+- The client (Postman, browser, frontend) sends a **login request** with credentials.
+- Example:
+  ```http
+  POST /login
+  Content-Type: application/json
+  {
+      "email": "user@example.com",
+      "password": "password123"
+  }
+  ```
 
-2. **Spring Security Intercepts the Request:**
-    - The request goes through the `BasicAuthenticationFilter`, which extracts the **username (email)** and **password** from the header.
+### 2️⃣ Authentication Process
+- `AuthenticationManager` verifies the credentials.
+- Calls `UserDetailsService.loadUserByUsername(email)` to fetch user details from the DB.
+- Compares the provided password with the stored **hashed password** using `BCryptPasswordEncoder`.
 
-3. **UserDetailsService is Triggered:**
-    - `CustomUserDetailsService.loadUserByUsername(email)` is called by Spring Security.
-    - This method fetches user details from the database.
+### 3️⃣ JWT Token Generation
+- If authentication is successful:
+   - A **JWT token** is created using `JwtService`.
+   - The token is signed with a **secret key**.
+   - Example:
+     ```java
+     String token = Jwts.builder()
+         .setSubject(user.getEmail())
+         .setIssuedAt(new Date())
+         .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+         .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+         .compact();
+     ```
+- The server responds with the token:
+  ```json
+  {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+  ```
 
-4. **CustomUserDetailsService Implementation:**
-    - Inside `loadUserByUsername(email)`, the user is fetched from the repository:
-      ```java
-      @Service
-      public class CustomUserDetailsService implements UserDetailsService {
-          @Autowired
-          private UserRepository userRepository;
- 
-          @Override
-          public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-              User user = userRepository.findByEmail(email)
-                  .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-              return new org.springframework.security.core.userdetails.User(
-                  user.getEmail(),
-                  user.getPassword(),
-                  Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
-              );
-          }
-      }
-      ```
+### 4️⃣ Client Uses JWT for Authentication
+- The client includes the JWT in the **Authorization header** when accessing protected APIs.
+- Example:
+  ```http
+  GET /order
+  Authorization: Bearer <JWT_TOKEN>
+  ```
 
-5. **AuthenticationManager Validates Password:**
-    - Spring Security automatically compares the provided password (from the request) with the **hashed password** from the database using `BCryptPasswordEncoder`.
-    - If passwords match, authentication is successful.
+### 5️⃣ JWT Validation in Filter
+- `JwtAuthenticationFilter` extracts the token from the request.
+- The token is **validated**:
+   - Signature verification ✅
+   - Expiration check ✅
+   - User existence check ✅
+- If valid, `SecurityContextHolder` is updated:
+  ```java
+  UsernamePasswordAuthenticationToken authToken =
+      new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+  SecurityContextHolder.getContext().setAuthentication(authToken);
+  ```
 
-6. **SecurityContextHolder Stores Authentication:**
-    - After authentication, Spring Security stores the authenticated user in the `SecurityContextHolder`.
+### 6️⃣ Access to Protected Endpoints
+- If authentication is successful, the request is forwarded to the controller.
+- Otherwise, **401 Unauthorized** is returned.
 
-7. **Access to Secured Endpoint:**
-    - If the user is authenticated and has required **roles/permissions**, they can access the protected API (`/order/createorder`).
-    - If authorization fails, a **403 Forbidden** error is returned.
+## 🔥 Debugging & Fixing Issues
+✅ Ensure `JwtAuthenticationFilter` is registered in `SecurityConfig`.
+✅ Check if `loadUserByUsername` is correctly fetching user data.
+✅ Verify the secret key is **at least 256 bits**.
+✅ Use `jwt.io` to debug token issues.
 
-## Debugging Tips
-- If authentication fails, check logs to see if `loadUserByUsername` is being called.
-- Ensure the password stored in the database is hashed using `BCryptPasswordEncoder`.
-- Check if `UserDetailsService` is properly registered as a `@Bean` in `SecurityConfig`.
-
+---
+💡 **Now you're all set with JWT authentication in Spring Boot!** 🚀

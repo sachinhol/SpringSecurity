@@ -16,3 +16,7 @@ server:
 logging:
   level:
     root: debug
+
+jwt:
+  secret: bW9uZXlrZXlzLXJ1bGUtam90YS1zZWNyZXQtMTIzNDU2
+  expiration: 3600000

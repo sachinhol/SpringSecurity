@@ -1,0 +1,59 @@
+
+server:
+  port: 8083
+
+spring:
+  application:
+    name: Api-Gateway
+  cloud:
+    gateway:
+      routes:
+        - id: Product-Service
+          uri: lb://Product-Service
+          predicates:
+            - Path=/api/product/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ProductServiceCB
+                fallbackUri: forward:/fallback/product
+            - AuthFilter
+
+
+        - id: Order-Service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - AuthFilter
+
+        - id: Auth-Service
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/api/auth/**
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8010/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      ProductServiceCB:
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5000ms
+        permittedNumberOfCallsInHalfOpenState: 2
+        minimumNumberOfCalls: 3
+
+
